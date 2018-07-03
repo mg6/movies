@@ -3,7 +3,10 @@ package service
 import (
   "encoding/json"
   "net/http"
+  "github.com/mg6/movies/movieservice/dbclient"
 )
+
+var DbClient dbclient.DbClient
 
 func CreateMovie(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
