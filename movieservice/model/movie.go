@@ -15,3 +15,17 @@ type Movie struct {
 }
 
 type Movies []Movie
+
+type ByRating Movies
+
+func (s ByRating) Len() int {
+  return len(s)
+}
+
+func (s ByRating) Swap(i, j int) {
+  s[i], s[j] = s[j], s[i]
+}
+
+func (s ByRating) Less(i, j int) bool {
+  return s[i].Rating < s[j].Rating
+}
