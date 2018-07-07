@@ -1,6 +1,7 @@
 package model
 
 import (
+  "regexp"
   "time"
   "github.com/globalsign/mgo/bson"
 )
@@ -15,6 +16,13 @@ type Movie struct {
 }
 
 type Movies []Movie
+
+
+func (m *Movie) IsValid() bool {
+  validTitle := regexp.MustCompile("^[A-Za-z]{3,50}$")
+  return validTitle.MatchString(m.Title)
+}
+
 
 type ByRating Movies
 

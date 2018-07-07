@@ -2,6 +2,7 @@ package model
 
 import (
   "sort"
+  "strings"
   "testing"
   . "github.com/smartystreets/goconvey/convey"
 )
@@ -27,4 +28,38 @@ func TestSortByRating(t *testing.T) {
       })
     })
   })
+}
+
+func TestIsValid(t *testing.T) {
+  Convey("Given a movie with valid title of <Title>", t, func() {
+    movie := Movie{
+      Title: "Title",
+    }
+
+    Convey("When the movie is validated", func() {
+      actual := movie.IsValid()
+
+      Convey("Then the result should be successful", func() {
+        expected := true
+        So(actual, ShouldEqual, expected)
+      })
+    })
+  })
+
+  for _, title := range []string{"", "Ab", strings.Repeat("x", 51), "Test123"} {
+    Convey("Given a movie with invalid title of <" + title + ">", t, func() {
+      movie := Movie{
+        Title: title,
+      }
+
+      Convey("When the movie is validated", func() {
+        actual := movie.IsValid()
+
+        Convey("Then the result should be unsuccessful", func() {
+          expected := false
+          So(actual, ShouldEqual, expected)
+        })
+      })
+    })
+  }
 }

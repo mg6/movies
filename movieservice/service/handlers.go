@@ -19,6 +19,11 @@ func CreateMovie(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  if ok := m.IsValid(); !ok {
+    http.Error(w, "Validation unsuccessful", http.StatusBadRequest)
+    return
+  }
+
   m.CreatedAt = time.Now()
   if err := DbClient.CreateMovie(&m); err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -16,15 +16,15 @@ func TestCreateMovie(t *testing.T) {
   mockRepo.On("CreateMovie", Anything).Return(nil)
   DbClient = mockRepo
 
-  expected := model.Movie{
-    Title: "Test 123",
-    Rating: 0.0,
-    Director: "Director 123",
-    Actors: []string{"A", "B", "C"},
-  }
-  asJson, _ := json.Marshal(expected)
+  Convey("Given a HTTP request to create a valid movie", t, func() {
+    expected := model.Movie{
+      Title: "Test",
+      Rating: 0.0,
+      Director: "Director 123",
+      Actors: []string{"A", "B", "C"},
+    }
+    asJson, _ := json.Marshal(expected)
 
-  Convey("Given a HTTP request to create a movie", t, func() {
     req := httptest.NewRequest("POST", "/movies", bytes.NewReader(asJson))
     resp := httptest.NewRecorder()
 
@@ -43,6 +43,27 @@ func TestCreateMovie(t *testing.T) {
           So(actual.Director, ShouldEqual, expected.Director)
           So(actual.Actors, ShouldResemble, expected.Actors)
         })
+      })
+    })
+  })
+
+  Convey("Given a HTTP request to create an invalid movie", t, func() {
+    expected := model.Movie{
+      Title: "Test 123",
+      Rating: 0.0,
+      Director: "Director 123",
+      Actors: []string{"A", "B", "C"},
+    }
+    asJson, _ := json.Marshal(expected)
+
+    req := httptest.NewRequest("POST", "/movies", bytes.NewReader(asJson))
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 400", func() {
+        So(resp.Code, ShouldEqual, 400)
       })
     })
   })
