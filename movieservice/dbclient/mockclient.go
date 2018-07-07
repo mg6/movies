@@ -23,3 +23,8 @@ func (m *MockClient) DeleteMovie(id string) error {
   args := m.Mock.Called(id)
   return args.Error(0)
 }
+
+func (m *MockClient) CreateReview(movieId string, review *model.Review) error {
+  args := m.Mock.Called(movieId, review)
+  return args.Error(0)
+}
