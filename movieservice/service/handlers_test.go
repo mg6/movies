@@ -89,6 +89,39 @@ func TestGetMoviesByRating(t *testing.T) {
   })
 }
 
+func TestDeleteMovie(t *testing.T) {
+  mockRepo := &dbclient.MockClient{}
+  mockRepo.On("DeleteMovie", "123").Return(nil)
+  mockRepo.On("DeleteMovie", Anything).Return(new(dbclient.ErrNotFound))
+  DbClient = mockRepo
+
+  Convey("Given a HTTP request to delete an existing movie", t, func() {
+    req := httptest.NewRequest("DELETE", "/movies/123", nil)
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 204", func() {
+        So(resp.Code, ShouldEqual, 204)
+      })
+    })
+  })
+
+  Convey("Given a HTTP request to delete a non-existent movie", t, func() {
+    req := httptest.NewRequest("DELETE", "/movies/456", nil)
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 404", func() {
+        So(resp.Code, ShouldEqual, 404)
+      })
+    })
+  })
+}
+
 func TestGetWrongPath(t *testing.T) {
   Convey("Given a HTTP request for /invalid/123", t, func() {
     req := httptest.NewRequest("GET", "/invalid/123", nil)

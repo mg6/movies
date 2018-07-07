@@ -5,6 +5,7 @@ import (
   "net/http"
   "sort"
   "time"
+  "github.com/gorilla/mux"
   "github.com/mg6/movies/movieservice/model"
   "github.com/mg6/movies/movieservice/dbclient"
 )
@@ -54,8 +55,24 @@ func GetMoviesByRating(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMovie(w http.ResponseWriter, r *http.Request) {
-  w.WriteHeader(http.StatusOK)
-  w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+  vars := mux.Vars(r)
+  id, ok := vars["movieId"]
+  if !ok {
+    http.Error(w, "Missing movie ID", http.StatusBadRequest)
+    return
+  }
 
-  json.NewEncoder(w).Encode([]interface{}{})
+  err := DbClient.DeleteMovie(id)
+  if err != nil {
+    if err, ok := err.(*dbclient.ErrNotFound); ok {
+      http.Error(w, err.Error(), http.StatusNotFound)
+      return
+    } else {
+      http.Error(w, err.Error(), http.StatusInternalServerError)
+      return
+    }
+  }
+
+  w.WriteHeader(http.StatusNoContent)
+  w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 }
