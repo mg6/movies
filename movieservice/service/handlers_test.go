@@ -143,6 +143,64 @@ func TestDeleteMovie(t *testing.T) {
   })
 }
 
+func TestCreateReview(t *testing.T) {
+  mockRepo := &dbclient.MockClient{}
+  mockRepo.On("CreateReview", "123", Anything).Return(nil)
+  mockRepo.On("CreateReview", Anything, Anything).Return(new(dbclient.ErrNotFound))
+  DbClient = mockRepo
+
+  Convey("Given a HTTP request to create a review on existing movie", t, func() {
+    expected := model.Review{
+      Text: "Test",
+      Rating: 4.0,
+      Status: model.Approved,
+    }
+    asJson, _ := json.Marshal(expected)
+
+    req := httptest.NewRequest("POST", "/reviews/123", bytes.NewReader(asJson))
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 201", func() {
+        So(resp.Code, ShouldEqual, 201)
+
+        Convey("And entity values should match", func() {
+          actual := model.Review{}
+          json.Unmarshal(resp.Body.Bytes(), &actual)
+
+          So(actual.Text, ShouldEqual, expected.Text)
+          So(actual.Rating, ShouldEqual, expected.Rating)
+
+          Convey("And status should be changed to unapproved", func() {
+            So(actual.Status, ShouldEqual, model.Unapproved)
+          })
+        })
+      })
+    })
+  })
+
+  Convey("Given a HTTP request to create a review on non-existent movie", t, func() {
+    expected := model.Review{
+      Text: "Test",
+      Rating: 4.0,
+    }
+    asJson, _ := json.Marshal(expected)
+
+    req := httptest.NewRequest("POST", "/reviews/456", bytes.NewReader(asJson))
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 404", func() {
+        So(resp.Code, ShouldEqual, 404)
+      })
+    })
+  })
+}
+
 func TestGetWrongPath(t *testing.T) {
   Convey("Given a HTTP request for /invalid/123", t, func() {
     req := httptest.NewRequest("GET", "/invalid/123", nil)

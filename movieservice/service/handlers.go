@@ -81,3 +81,38 @@ func DeleteMovie(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusNoContent)
   w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 }
+
+func CreateReview(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  movieId, ok := vars["movieId"]
+  if !ok {
+    http.Error(w, "Missing movie ID", http.StatusBadRequest)
+    return
+  }
+
+  var review model.Review
+  if err := json.NewDecoder(r.Body).Decode(&review); err != nil {
+    http.Error(w, err.Error(), http.StatusBadRequest)
+    return
+  }
+
+  review.Status = model.Unapproved
+  review.CreatedAt = time.Now()
+
+  if err := DbClient.CreateReview(movieId, &review); err != nil {
+    if err, ok := err.(*dbclient.ErrNotFound); ok {
+      http.Error(w, err.Error(), http.StatusNotFound)
+      return
+    } else {
+      http.Error(w, err.Error(), http.StatusInternalServerError)
+      return
+    }
+  }
+
+  w.WriteHeader(http.StatusCreated)
+  w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+  if err := json.NewEncoder(w).Encode(&review); err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+}
