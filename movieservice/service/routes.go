@@ -39,4 +39,10 @@ var routes = Routes{
     "/reviews/{movieId}",
     CreateReview,
   },
+  Route{
+    "GetReviews",
+    "GET",
+    "/reviews/{movieId}",
+    GetReviews,
+  },
 }

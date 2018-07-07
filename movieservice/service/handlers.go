@@ -116,3 +116,34 @@ func CreateReview(w http.ResponseWriter, r *http.Request) {
     return
   }
 }
+
+func GetReviews(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  movieId, ok := vars["movieId"]
+  if !ok {
+    http.Error(w, "Missing movie ID", http.StatusBadRequest)
+    return
+  }
+
+  reviews, err := DbClient.GetReviews(movieId)
+  if err != nil {
+    if err, ok := err.(*dbclient.ErrNotFound); ok {
+      http.Error(w, err.Error(), http.StatusNotFound)
+      return
+    } else {
+      http.Error(w, err.Error(), http.StatusInternalServerError)
+      return
+    }
+  }
+
+  result := make(model.Reviews, len(reviews))
+  for i, movie := range reviews {
+    result[i] = movie
+  }
+
+  w.WriteHeader(http.StatusOK)
+  if err := json.NewEncoder(w).Encode(result); err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+}
