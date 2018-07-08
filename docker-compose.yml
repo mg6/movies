@@ -10,6 +10,7 @@ services:
       - approvals
     environment:
       MONGODB_URL: db
+      APPROVALS_RPC_URL: http://approvals:8080/rpc
   approvals:
     build: ./approvalservice
     image: movies/approvalservice

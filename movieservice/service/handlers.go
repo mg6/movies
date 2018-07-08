@@ -8,9 +8,11 @@ import (
   "github.com/gorilla/mux"
   "github.com/mg6/movies/movieservice/model"
   "github.com/mg6/movies/movieservice/dbclient"
+  "github.com/mg6/movies/movieservice/approvalclient"
 )
 
 var DbClient dbclient.DbClient
+var ApprovalClient approvalclient.ApprovalClient
 
 func CreateMovie(w http.ResponseWriter, r *http.Request) {
   var m model.Movie
