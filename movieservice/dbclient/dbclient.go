@@ -10,6 +10,7 @@ type DbClient interface {
   GetMovies() (model.Movies, error)
   DeleteMovie(string) error
   CreateReview(movieId string, review *model.Review) error
+  ApproveReview(movieId string, review *model.Review) error
   GetReviews(movieId string) (model.Reviews, error)
 }
 

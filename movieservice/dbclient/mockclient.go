@@ -34,6 +34,11 @@ func (m *MockClient) CreateReview(movieId string, review *model.Review) error {
   return args.Error(0)
 }
 
+func (m *MockClient) ApproveReview(movieId string, review *model.Review) error {
+  args := m.Mock.Called(movieId, review)
+  return args.Error(0)
+}
+
 func (m *MockClient) GetReviews(movieId string) (model.Reviews, error) {
   args := m.Mock.Called(movieId)
   return args.Get(0).(model.Reviews), args.Error(1)

@@ -56,6 +56,11 @@ func (m *MongoClient) CreateReview(movieId string, review *model.Review) error {
   return err
 }
 
+func (m *MongoClient) ApproveReview(movieId string, review *model.Review) error {
+  log.Println("Review approving not implemented")
+  return nil
+}
+
 func (m *MongoClient) GetReviews(movieId string) (model.Reviews, error) {
   var movie model.Movie
   err := m.Session.DB("app").C("movies").Find(bson.M{"_id": bson.ObjectIdHex(movieId)}).One(&movie)
