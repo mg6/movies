@@ -143,6 +143,114 @@ func TestDeleteMovie(t *testing.T) {
   })
 }
 
+func TestCreateReview(t *testing.T) {
+  mockRepo := &dbclient.MockClient{}
+  mockRepo.On("CreateReview", "123", Anything).Return(nil)
+  mockRepo.On("CreateReview", Anything, Anything).Return(new(dbclient.ErrNotFound))
+  DbClient = mockRepo
+
+  Convey("Given a HTTP request to create a review on existing movie", t, func() {
+    expected := model.Review{
+      Text: "Test",
+      Rating: 4.0,
+      Status: model.Approved,
+    }
+    asJson, _ := json.Marshal(expected)
+
+    req := httptest.NewRequest("POST", "/reviews/123", bytes.NewReader(asJson))
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 201", func() {
+        So(resp.Code, ShouldEqual, 201)
+
+        Convey("And entity values should match", func() {
+          actual := model.Review{}
+          json.Unmarshal(resp.Body.Bytes(), &actual)
+
+          So(actual.Text, ShouldEqual, expected.Text)
+          So(actual.Rating, ShouldEqual, expected.Rating)
+
+          Convey("And status should be changed to unapproved", func() {
+            So(actual.Status, ShouldEqual, model.Unapproved)
+          })
+        })
+      })
+    })
+  })
+
+  Convey("Given a HTTP request to create a review on non-existent movie", t, func() {
+    expected := model.Review{
+      Text: "Test",
+      Rating: 4.0,
+    }
+    asJson, _ := json.Marshal(expected)
+
+    req := httptest.NewRequest("POST", "/reviews/456", bytes.NewReader(asJson))
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 404", func() {
+        So(resp.Code, ShouldEqual, 404)
+      })
+    })
+  })
+}
+
+func TestGetReviews(t *testing.T) {
+  r1 := model.Review{
+    Text: "Review 1",
+    Rating: 4.0,
+  }
+  r2 := model.Review{
+    Text: "Review 2",
+    Rating: 5.0,
+  }
+  expected := model.Reviews{r1, r2}
+
+  mockRepo := &dbclient.MockClient{}
+  mockRepo.On("GetReviews", "123").Return(expected, nil)
+  mockRepo.On("GetReviews", Anything).Return(model.Reviews(nil), new(dbclient.ErrNotFound))
+  DbClient = mockRepo
+
+  Convey("Given a HTTP request to get reviews for existing movie", t, func() {
+    req := httptest.NewRequest("GET", "/reviews/123", nil)
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 200", func() {
+        So(resp.Code, ShouldEqual, 200)
+
+        Convey("And entity list should match expected one", func() {
+          actual := model.Reviews{}
+          json.Unmarshal(resp.Body.Bytes(), &actual)
+
+          So(actual, ShouldResemble, expected)
+        })
+      })
+    })
+  })
+
+  Convey("Given a HTTP request to get reviews for non-existent movie", t, func() {
+    req := httptest.NewRequest("GET", "/reviews/456", nil)
+    resp := httptest.NewRecorder()
+
+    Convey("When the request is handled by the router", func() {
+      NewRouter().ServeHTTP(resp, req)
+
+      Convey("Then the response should be 404", func() {
+        So(resp.Code, ShouldEqual, 404)
+      })
+    })
+  })
+}
+
 func TestGetWrongPath(t *testing.T) {
   Convey("Given a HTTP request for /invalid/123", t, func() {
     req := httptest.NewRequest("GET", "/invalid/123", nil)

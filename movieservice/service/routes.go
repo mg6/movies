@@ -33,4 +33,16 @@ var routes = Routes{
     "/movies/{movieId}",
     DeleteMovie,
   },
+  Route{
+    "CreateReview",
+    "POST",
+    "/reviews/{movieId}",
+    CreateReview,
+  },
+  Route{
+    "GetReviews",
+    "GET",
+    "/reviews/{movieId}",
+    GetReviews,
+  },
 }

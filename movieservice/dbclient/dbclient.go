@@ -8,6 +8,8 @@ type DbClient interface {
   CreateMovie(*model.Movie) error
   GetMovies() (model.Movies, error)
   DeleteMovie(string) error
+  CreateReview(movieId string, review *model.Review) error
+  GetReviews(movieId string) (model.Reviews, error)
 }
 
 type ErrNotFound struct {}
