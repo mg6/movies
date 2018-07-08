@@ -1,0 +1,16 @@
+version: '2'
+services:
+  movies:
+    build: ./movieservice
+    image: movies/movieservice
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      MONGODB_URL: db
+  db:
+    image: mongo:3.6
+    container_name: movies-db
+    ports:
+      - "27017:27017"
