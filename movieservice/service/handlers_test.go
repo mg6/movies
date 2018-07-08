@@ -9,6 +9,7 @@ import (
   . "github.com/smartystreets/goconvey/convey"
   "github.com/mg6/movies/movieservice/model"
   "github.com/mg6/movies/movieservice/dbclient"
+  "github.com/mg6/movies/movieservice/approvalclient"
 )
 
 func TestCreateMovie(t *testing.T) {
@@ -148,6 +149,11 @@ func TestCreateReview(t *testing.T) {
   mockRepo.On("CreateReview", "123", Anything).Return(nil)
   mockRepo.On("CreateReview", Anything, Anything).Return(new(dbclient.ErrNotFound))
   DbClient = mockRepo
+
+  mockApprovals := &approvalclient.MockClient{}
+  mockApprovals.On("RequestApproval", Anything).Return(approvalclient.ApprovalReply{Status: model.Approved}, error(nil))
+  mockRepo.On("ApproveReview", Anything, Anything).Return(nil)
+  ApprovalClient = mockApprovals
 
   Convey("Given a HTTP request to create a review on existing movie", t, func() {
     expected := model.Review{

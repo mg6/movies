@@ -2,6 +2,7 @@ package service
 
 import (
   "encoding/json"
+  "log"
   "net/http"
   "sort"
   "time"
@@ -110,6 +111,19 @@ func CreateReview(w http.ResponseWriter, r *http.Request) {
       return
     }
   }
+
+  go func() {
+    log.Println("Requesting review approval")
+    reply, err := ApprovalClient.RequestApproval(review)
+    if err != nil {
+      log.Printf("Cannot get approval reply: %s", err)
+      return
+    }
+
+    log.Printf("Got approval response with status %v\n", reply.Status)
+    review.Status = reply.Status
+    DbClient.ApproveReview(movieId, &review)
+  }()
 
   w.WriteHeader(http.StatusCreated)
   w.Header().Set("Content-Type", "application/json; charset=UTF-8")
