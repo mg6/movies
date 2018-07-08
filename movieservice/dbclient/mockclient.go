@@ -9,6 +9,11 @@ type MockClient struct {
   mock.Mock
 }
 
+func (m *MockClient) Connect(url string) error {
+  args := m.Mock.Called(url)
+  return args.Error(0)
+}
+
 func (m *MockClient) CreateMovie(movie *model.Movie) error {
   args := m.Mock.Called(movie)
   return args.Error(0)

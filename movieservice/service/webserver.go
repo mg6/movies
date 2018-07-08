@@ -3,6 +3,7 @@ package service
 import (
   "net/http"
   "log"
+  "github.com/mg6/movies/movieservice/dbclient"
 )
 
 func StartWebServer(port string) {
@@ -16,4 +17,9 @@ func StartWebServer(port string) {
     log.Println("An error occurred starting HTTP server at port " + port)
     log.Println("Error: " + err.Error())
   }
+}
+
+func ConnectToDatabase(url string) {
+  DbClient = &dbclient.MongoClient{}
+  DbClient.Connect(url)
 }

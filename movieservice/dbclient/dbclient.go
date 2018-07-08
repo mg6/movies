@@ -5,6 +5,7 @@ import (
 )
 
 type DbClient interface {
+  Connect(url string) error
   CreateMovie(*model.Movie) error
   GetMovies() (model.Movies, error)
   DeleteMovie(string) error
