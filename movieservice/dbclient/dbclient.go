@@ -9,3 +9,9 @@ type DbClient interface {
   GetMovies() (model.Movies, error)
   DeleteMovie(string) error
 }
+
+type ErrNotFound struct {}
+
+func (e *ErrNotFound) Error() string {
+  return "Entity not found"
+}
