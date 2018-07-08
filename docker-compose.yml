@@ -7,8 +7,14 @@ services:
       - "8080:8080"
     depends_on:
       - db
+      - approvals
     environment:
       MONGODB_URL: db
+  approvals:
+    build: ./approvalservice
+    image: movies/approvalservice
+    ports:
+      - "8081:8080"
   db:
     image: mongo:3.6
     container_name: movies-db
