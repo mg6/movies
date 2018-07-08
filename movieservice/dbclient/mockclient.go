@@ -14,9 +14,9 @@ func (m *MockClient) Connect(url string) error {
   return args.Error(0)
 }
 
-func (m *MockClient) CreateMovie(movie *model.Movie) error {
+func (m *MockClient) CreateMovie(movie *model.Movie) (*model.Movie, error) {
   args := m.Mock.Called(movie)
-  return args.Error(0)
+  return args.Get(0).(*model.Movie), args.Error(1)
 }
 
 func (m *MockClient) GetMovies() (model.Movies, error) {
@@ -29,9 +29,9 @@ func (m *MockClient) DeleteMovie(id string) error {
   return args.Error(0)
 }
 
-func (m *MockClient) CreateReview(movieId string, review *model.Review) error {
+func (m *MockClient) CreateReview(movieId string, review *model.Review) (*model.Review, error) {
   args := m.Mock.Called(movieId, review)
-  return args.Error(0)
+  return args.Get(0).(*model.Review), args.Error(1)
 }
 
 func (m *MockClient) ApproveReview(movieId string, review *model.Review) error {

@@ -13,19 +13,19 @@ import (
 )
 
 func TestCreateMovie(t *testing.T) {
+  expected := model.Movie{
+    Title: "Test",
+    Rating: 0.0,
+    Director: "Director 123",
+    Actors: []string{"A", "B", "C"},
+  }
+  asJson, _ := json.Marshal(expected)
+
   mockRepo := &dbclient.MockClient{}
-  mockRepo.On("CreateMovie", Anything).Return(nil)
+  mockRepo.On("CreateMovie", Anything).Return(&expected, nil)
   DbClient = mockRepo
 
   Convey("Given a HTTP request to create a valid movie", t, func() {
-    expected := model.Movie{
-      Title: "Test",
-      Rating: 0.0,
-      Director: "Director 123",
-      Actors: []string{"A", "B", "C"},
-    }
-    asJson, _ := json.Marshal(expected)
-
     req := httptest.NewRequest("POST", "/movies", bytes.NewReader(asJson))
     resp := httptest.NewRecorder()
 
@@ -145,24 +145,24 @@ func TestDeleteMovie(t *testing.T) {
 }
 
 func TestCreateReview(t *testing.T) {
+  expected := model.Review{
+    Text: "Test",
+    Rating: 4.0,
+    Status: model.Unapproved,
+  }
+  asJson, _ := json.Marshal(expected)
+
   mockRepo := &dbclient.MockClient{}
-  mockRepo.On("CreateReview", "123", Anything).Return(nil)
-  mockRepo.On("CreateReview", Anything, Anything).Return(new(dbclient.ErrNotFound))
+  mockRepo.On("CreateReview", "123", Anything).Return(&expected, nil)
+  mockRepo.On("CreateReview", Anything, Anything).Return((*model.Review)(nil), new(dbclient.ErrNotFound))
+  mockRepo.On("ApproveReview", Anything, Anything).Return(nil)
   DbClient = mockRepo
 
   mockApprovals := &approvalclient.MockClient{}
   mockApprovals.On("RequestApproval", Anything).Return(approvalclient.ApprovalReply{Status: model.Approved}, error(nil))
-  mockRepo.On("ApproveReview", Anything, Anything).Return(nil)
   ApprovalClient = mockApprovals
 
   Convey("Given a HTTP request to create a review on existing movie", t, func() {
-    expected := model.Review{
-      Text: "Test",
-      Rating: 4.0,
-      Status: model.Approved,
-    }
-    asJson, _ := json.Marshal(expected)
-
     req := httptest.NewRequest("POST", "/reviews/123", bytes.NewReader(asJson))
     resp := httptest.NewRecorder()
 

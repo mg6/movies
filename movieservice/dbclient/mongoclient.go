@@ -22,9 +22,12 @@ func (m *MongoClient) Connect(url string) error {
   return err
 }
 
-func (m *MongoClient) CreateMovie(movie *model.Movie) error {
-  err := m.Session.DB("app").C("movies").Insert(&movie)
-  return err
+func (m *MongoClient) CreateMovie(movie *model.Movie) (*model.Movie, error) {
+  info, err := m.Session.DB("app").C("movies").UpsertId(nil, &movie)
+  if info.UpsertedId != nil {
+    movie.Id = info.UpsertedId.(bson.ObjectId)
+  }
+  return movie, err
 }
 
 func (m *MongoClient) GetMovies() (model.Movies, error) {
@@ -42,18 +45,21 @@ func (m *MongoClient) DeleteMovie(id string) error {
   return err
 }
 
-func (m *MongoClient) CreateReview(movieId string, review *model.Review) error {
+func (m *MongoClient) CreateReview(movieId string, review *model.Review) (*model.Review, error) {
   var movie model.Movie
   err := m.Session.DB("app").C("movies").Find(bson.M{"_id": bson.ObjectIdHex(movieId)}).One(&movie)
   if err != nil {
     log.Println(err)
-    return err
+    return nil, err
   }
 
   movie.Reviews = append(movie.Reviews, *review)
 
-  _, err = m.Session.DB("app").C("movies").Upsert(bson.M{"_id": bson.ObjectIdHex(movieId)}, &movie)
-  return err
+  //info, err = m.Session.DB("app").C("movies").UpsertId(bson.M{"_id": bson.ObjectIdHex(movieId)}, &movie)
+  //if info.UpsertedId != nil {
+  //  review.Id = info.UpsertedId.(bson.ObjectId)
+  //}
+  return review, err
 }
 
 func (m *MongoClient) ApproveReview(movieId string, review *model.Review) error {
