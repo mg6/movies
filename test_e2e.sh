@@ -2,7 +2,7 @@
 
 set -xeuo pipefail
 
-API="${MOVIE_API_URL:-http://localhost:8080}"
+API="${1:-http://localhost:8080}"
 
 get_movies() {
   curl -s "$API/movies"
