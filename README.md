@@ -128,10 +128,9 @@ POST /reviews/:movie_id
 
 > Example
 ```
-# Replace :movie_id with existing identifier from GET /movies call
-curl 'http://localhost:8080/reviews/:movie_id' --data '{"text":"Review","rating":5.0}'
+curl 'http://localhost:8080/reviews/tron-legacy' --data '{"text":"Review","rating":5.0}'
 
-curl "$(minikube service movies --url)/reviews/:movie_id" --data '{"text":"Review","rating":5.0}'
+curl "$(minikube service movies --url)/reviews/tron-legacy" --data '{"text":"Review","rating":5.0}'
 ```
 
 ### Get reviews
@@ -142,10 +141,9 @@ GET /reviews/:movie_id
 
 > Example
 ```
-# Replace :movie_id with existing identifier from GET /movies call
-curl 'http://localhost:8080/reviews/:movie_id'
+curl 'http://localhost:8080/reviews/tron-legacy'
 
-curl "$(minikube service movies --url)/reviews/:movie_id"
+curl "$(minikube service movies --url)/reviews/tron-legacy"
 ```
 
 ### Delete movie
@@ -156,8 +154,7 @@ DELETE /movies/:movie_id
 
 > Example
 ```
-# Replace :movie_id with existing identifier from GET /movies call
-curl -X DELETE 'http://localhost:8080/movies/:movie_id'
+curl -X DELETE 'http://localhost:8080/movies/tron-legacy'
 
-curl -X DELETE "$(minikube service movies --url)/movies/:movie_id"
+curl -X DELETE "$(minikube service movies --url)/movies/tron-legacy"
 ```
