@@ -34,45 +34,45 @@ func (m *MongoClient) GetMovies() (model.Movies, error) {
   var movies model.Movies
   err := m.Session.DB("app").C("movies").Find(nil).All(&movies)
   if err != nil {
-    log.Println(err)
+    log.Printf("Cannot get movies: %v", err)
     return nil, err
   }
   return movies, nil
 }
 
-func (m *MongoClient) DeleteMovie(id string) error {
-  err := m.Session.DB("app").C("movies").Remove(bson.M{"_id": bson.ObjectIdHex(id)})
+func (m *MongoClient) DeleteMovie(slug string) error {
+  err := m.Session.DB("app").C("movies").Remove(bson.M{"slug": slug})
   return err
 }
 
-func (m *MongoClient) CreateReview(movieId string, review *model.Review) (*model.Review, error) {
+func (m *MongoClient) CreateReview(movieSlug string, review *model.Review) (*model.Review, error) {
   var movie model.Movie
-  err := m.Session.DB("app").C("movies").Find(bson.M{"_id": bson.ObjectIdHex(movieId)}).One(&movie)
+  err := m.Session.DB("app").C("movies").Find(bson.M{"slug": movieSlug}).One(&movie)
   if err != nil {
-    log.Println(err)
+    log.Printf("Create review: error for movie %v: %v", movieSlug, err)
     return nil, err
   }
 
-  movie.Reviews = append(movie.Reviews, *review)
+  review.Movie = movieSlug
 
-  //info, err = m.Session.DB("app").C("movies").UpsertId(bson.M{"_id": bson.ObjectIdHex(movieId)}, &movie)
-  //if info.UpsertedId != nil {
-  //  review.Id = info.UpsertedId.(bson.ObjectId)
-  //}
+  info, err := m.Session.DB("app").C("reviews").UpsertId(nil, &review)
+  if info.UpsertedId != nil {
+    review.Id = info.UpsertedId.(bson.ObjectId)
+  }
   return review, err
 }
 
-func (m *MongoClient) ApproveReview(movieId string, review *model.Review) error {
+func (m *MongoClient) ApproveReview(movieSlug string, review *model.Review) error {
   log.Println("Review approving not implemented")
   return nil
 }
 
-func (m *MongoClient) GetReviews(movieId string) (model.Reviews, error) {
-  var movie model.Movie
-  err := m.Session.DB("app").C("movies").Find(bson.M{"_id": bson.ObjectIdHex(movieId)}).One(&movie)
+func (m *MongoClient) GetReviews(movieSlug string) (model.Reviews, error) {
+  var reviews model.Reviews
+  err := m.Session.DB("app").C("reviews").Find(bson.M{"movie": movieSlug}).All(&reviews)
   if err != nil {
-    log.Println(err)
+    log.Printf("Get reviews: error for movie %v: %v", movieSlug, err)
     return nil, err
   }
-  return movie.Reviews, nil
+  return reviews, nil
 }
