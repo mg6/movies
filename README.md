@@ -54,18 +54,23 @@ Deploy application to Kubernetes:
 kubectl apply -f kubernetes/
 ```
 
-Check deployment:
+Check deployment, waiting for Running status on all pods:
 ```sh
 kubectl get all
 ```
 
-Try getting movies:
+Run E2E test on the cluster:
+```sh
+bash test_e2e.sh "$(minikube service movies --url)"
+```
+
+> If you reached this point, you may now access other API endpoints as described below.
+
+Try getting movies, etc.:
 ```sh
 % curl $(minikube service movies --url)/movies
 []
 ```
-
-> If you reached this point, you may now access other API endpoints as described below.
 
 Tear down application:
 ```sh
