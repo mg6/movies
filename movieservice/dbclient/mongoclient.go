@@ -41,7 +41,8 @@ func (m *MongoClient) GetMovies() (model.Movies, error) {
 }
 
 func (m *MongoClient) DeleteMovie(slug string) error {
-  err := m.Session.DB("app").C("movies").Remove(bson.M{"slug": slug})
+  err := m.Session.DB("app").C("reviews").Remove(bson.M{"movie": slug})
+  err = m.Session.DB("app").C("movies").Remove(bson.M{"slug": slug})
   return err
 }
 
