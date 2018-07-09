@@ -4,6 +4,7 @@ import (
   "net/http"
   "log"
   "github.com/mg6/movies/movieservice/dbclient"
+  "github.com/mg6/movies/movieservice/approvalclient"
 )
 
 func StartWebServer(port string) {
@@ -22,4 +23,9 @@ func StartWebServer(port string) {
 func ConnectToDatabase(url string) {
   DbClient = &dbclient.MongoClient{}
   DbClient.Connect(url)
+}
+
+func InitializeApprovalClient(url string) {
+  log.Printf("Configuring approval service at %v\n", url)
+  ApprovalClient = &approvalclient.ApprovalClientImpl{Url: url}
 }

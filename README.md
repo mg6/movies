@@ -16,6 +16,12 @@ Check container status with:
 docker-compose ps
 ```
 
+You can now run E2E test:
+```sh
+# Requires curl & jq installed
+bash test_e2e.sh
+```
+
 Follow application logs with:
 ```sh
 docker-compose logs -f

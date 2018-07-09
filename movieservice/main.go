@@ -11,8 +11,10 @@ func main() {
   fmt.Printf("Starting %v\n", appName)
 
   dbDialUrl := flag.String("mongodb-url", "localhost", "MongoDB connection URL")
+  approvalsUrl := flag.String("approvals-rpc-url", "http://localhost.invalid/rpc", "Review approvals service URL")
   flag.Parse()
 
   service.ConnectToDatabase(*dbDialUrl)
+  service.InitializeApprovalClient(*approvalsUrl)
   service.StartWebServer("8080")
 }

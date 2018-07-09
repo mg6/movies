@@ -22,46 +22,72 @@ func (m *MongoClient) Connect(url string) error {
   return err
 }
 
-func (m *MongoClient) CreateMovie(movie *model.Movie) error {
-  err := m.Session.DB("app").C("movies").Insert(&movie)
-  return err
+func (m *MongoClient) CreateMovie(movie *model.Movie) (*model.Movie, error) {
+  info, err := m.Session.DB("app").C("movies").UpsertId(bson.NewObjectId(), &movie)
+  if info.UpsertedId != nil {
+    movie.Id = info.UpsertedId.(bson.ObjectId)
+  }
+  return movie, err
 }
 
 func (m *MongoClient) GetMovies() (model.Movies, error) {
   var movies model.Movies
   err := m.Session.DB("app").C("movies").Find(nil).All(&movies)
   if err != nil {
-    log.Println(err)
+    log.Printf("Cannot get movies: %v", err)
     return nil, err
   }
   return movies, nil
 }
 
-func (m *MongoClient) DeleteMovie(id string) error {
-  err := m.Session.DB("app").C("movies").Remove(bson.M{"_id": bson.ObjectIdHex(id)})
+func (m *MongoClient) DeleteMovie(slug string) error {
+  err := m.Session.DB("app").C("reviews").Remove(bson.M{"movie": slug})
+  err = m.Session.DB("app").C("movies").Remove(bson.M{"slug": slug})
   return err
 }
 
-func (m *MongoClient) CreateReview(movieId string, review *model.Review) error {
+func (m *MongoClient) CreateReview(movieSlug string, review *model.Review) (*model.Review, error) {
   var movie model.Movie
-  err := m.Session.DB("app").C("movies").Find(bson.M{"_id": bson.ObjectIdHex(movieId)}).One(&movie)
+  err := m.Session.DB("app").C("movies").Find(bson.M{"slug": movieSlug}).One(&movie)
   if err != nil {
-    log.Println(err)
+    log.Printf("Create review: error for movie %v: %v", movieSlug, err)
+    return nil, err
+  }
+
+  review.Movie = movieSlug
+
+  info, err := m.Session.DB("app").C("reviews").UpsertId(bson.NewObjectId(), &review)
+  if err != nil {
+    log.Printf("Error creating review: %v", err)
+    return nil, err
+  }
+  log.Printf("Upserted review info: %v", info)
+  if info.UpsertedId != nil {
+    review.Id = info.UpsertedId.(bson.ObjectId)
+  }
+  return review, err
+}
+
+func (m *MongoClient) ApproveReview(movieSlug string, review *model.Review) error {
+  log.Printf("Approving review: %v", review)
+  review.Status = model.Approved
+
+  _, err := m.Session.DB("app").C("reviews").UpsertId(review.Id, &review)
+  if err != nil {
+    log.Printf("Error approving review %v: %v", review, err)
     return err
   }
 
-  movie.Reviews = append(movie.Reviews, *review)
-
-  _, err = m.Session.DB("app").C("movies").Upsert(bson.M{"_id": bson.ObjectIdHex(movieId)}, &movie)
-  return err
+  log.Printf("Successfully approved review: %v", review)
+  return nil
 }
 
-func (m *MongoClient) GetReviews(movieId string) (model.Reviews, error) {
-  var movie model.Movie
-  err := m.Session.DB("app").C("movies").Find(bson.M{"_id": bson.ObjectIdHex(movieId)}).One(&movie)
+func (m *MongoClient) GetReviews(movieSlug string) (model.Reviews, error) {
+  var reviews model.Reviews
+  err := m.Session.DB("app").C("reviews").Find(bson.M{"movie": movieSlug, "status": model.Approved}).All(&reviews)
   if err != nil {
-    log.Println(err)
+    log.Printf("Get reviews: error for movie %v: %v", movieSlug, err)
     return nil, err
   }
-  return movie.Reviews, nil
+  return reviews, nil
 }

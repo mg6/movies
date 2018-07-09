@@ -6,10 +6,11 @@ import (
 
 type DbClient interface {
   Connect(url string) error
-  CreateMovie(*model.Movie) error
+  CreateMovie(*model.Movie) (*model.Movie, error)
   GetMovies() (model.Movies, error)
   DeleteMovie(string) error
-  CreateReview(movieId string, review *model.Review) error
+  CreateReview(movieId string, review *model.Review) (*model.Review, error)
+  ApproveReview(movieId string, review *model.Review) error
   GetReviews(movieId string) (model.Reviews, error)
 }
 
