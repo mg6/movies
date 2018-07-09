@@ -70,7 +70,7 @@ func (m *MongoClient) ApproveReview(movieSlug string, review *model.Review) erro
 
 func (m *MongoClient) GetReviews(movieSlug string) (model.Reviews, error) {
   var reviews model.Reviews
-  err := m.Session.DB("app").C("reviews").Find(bson.M{"movie": movieSlug}).All(&reviews)
+  err := m.Session.DB("app").C("reviews").Find(bson.M{"movie": movieSlug, "status": model.Approved}).All(&reviews)
   if err != nil {
     log.Printf("Get reviews: error for movie %v: %v", movieSlug, err)
     return nil, err
