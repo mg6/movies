@@ -23,7 +23,7 @@ func (m *MongoClient) Connect(url string) error {
 }
 
 func (m *MongoClient) CreateMovie(movie *model.Movie) (*model.Movie, error) {
-  info, err := m.Session.DB("app").C("movies").UpsertId(nil, &movie)
+  info, err := m.Session.DB("app").C("movies").UpsertId(bson.NewObjectId(), &movie)
   if info.UpsertedId != nil {
     movie.Id = info.UpsertedId.(bson.ObjectId)
   }
@@ -56,7 +56,12 @@ func (m *MongoClient) CreateReview(movieSlug string, review *model.Review) (*mod
 
   review.Movie = movieSlug
 
-  info, err := m.Session.DB("app").C("reviews").UpsertId(nil, &review)
+  info, err := m.Session.DB("app").C("reviews").UpsertId(bson.NewObjectId(), &review)
+  if err != nil {
+    log.Printf("Error creating review: %v", err)
+    return nil, err
+  }
+  log.Printf("Upserted review info: %v", info)
   if info.UpsertedId != nil {
     review.Id = info.UpsertedId.(bson.ObjectId)
   }
@@ -64,7 +69,16 @@ func (m *MongoClient) CreateReview(movieSlug string, review *model.Review) (*mod
 }
 
 func (m *MongoClient) ApproveReview(movieSlug string, review *model.Review) error {
-  log.Println("Review approving not implemented")
+  log.Printf("Approving review: %v", review)
+  review.Status = model.Approved
+
+  _, err := m.Session.DB("app").C("reviews").UpsertId(review.Id, &review)
+  if err != nil {
+    log.Printf("Error approving review %v: %v", review, err)
+    return err
+  }
+
+  log.Printf("Successfully approved review: %v", review)
   return nil
 }
 
